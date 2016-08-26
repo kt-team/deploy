@@ -1,5 +1,7 @@
 #!/bin/bash
 set -e # EXIT on ANY error
+BASE_PATH=/var/www/magento
+cd $BASE_PATH
 #variables
 PWD=$( pwd )
 NOW=$(date +"%Y-%m-%d-%H-%M")
