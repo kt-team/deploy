@@ -24,7 +24,7 @@ php build-sample-data.php --ce-source="$BASE_PATH/current"
 cd $BASE_PATH/current
 rm -rf var/generation/* var/cache/*
 php -d xdebug.max_nesting_level=500 bin/magento setup:upgrade
-mysql -uroot -ptmp -h mysql < /root/change_translate.sql
+mysql -uroot -ptmp -h mysql < $BASE_PATH/current/setup.sql
 bin/magento setup:di:compile
 bin/magento deploy:mode:set production
 chown -R www-data:www-data ./*
