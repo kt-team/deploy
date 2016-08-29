@@ -24,6 +24,9 @@ php build-sample-data.php --ce-source="$BASE_PATH/current"
 cd $BASE_PATH/current
 rm -rf var/generation/* var/cache/*
 php -d xdebug.max_nesting_level=500 bin/magento setup:upgrade
+git clone $GITUSER@$GITPROVIDER:$GITTEAMNAME/$PROJECT.git tmp-magento
+cp tmp-magento/setup.sql $BASE_PATH/current/setup.sql
+rm -rf tmp-magento
 mysql -uroot -ptmp -h mysql $DBNAME < $BASE_PATH/current/setup.sql
 bin/magento setup:di:compile
 bin/magento deploy:mode:set production
