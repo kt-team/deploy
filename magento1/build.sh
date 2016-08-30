@@ -5,7 +5,7 @@ cd $BASE_PATH
 #variables
 PWD=$( pwd )
 NOW=$(date +"%Y-%m-%d-%H-%M")
-ProjectDir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+ProjectDir=$BASE_PATH
 cd $ProjectDir
 
 if [ ! -f $ProjectDir/.deploy/etc/.config ]; then
