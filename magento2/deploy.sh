@@ -2,17 +2,21 @@
 set -e # EXIT on ANY error
 BASE_PATH=/var/www/magento
 cd $BASE_PATH
-#variables
-PWD=$( pwd )
-NOW=$(date +"%Y-%m-%d-%H-%M")
-ProjectDir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-cd $ProjectDir
 
+rm -rf /etc/php5/cli/conf.d/20-xdebug.ini 
+rm -rf /etc/php/5.6/cli/conf.d/20-xdebug.ini 
+rm -rf /etc/php/7.0/cli/conf.d/20-xdebug.ini 
+
+set -e # EXIT on ANY error
+NOW=$(date +"%Y-%m-%d-%H-%M")
+ProjectDir=$BASE_PATH
 if [ ! -f $ProjectDir/.deploy/etc/.config ]; then
     exit "NO VAR FILE FOUND"
 fi
 #LOADING VARS FROM FILE"
 source $ProjectDir/.deploy/etc/.config
+
+echo "DISKSPACEBUFFER: $DISKSPACEBUFFER";
 
 #CHECKING DISK SPACE
 CurrDirAllSize=`du -Lc $ProjectDir/current | tail -n-1 | awk '{print $1}'`
@@ -27,92 +31,70 @@ if [ $SpaceAvailable -lt $SpaceNeeded ]; then
     exit 1
 fi
 
-echo "GIT: git clone $GITUSER@$GITPROVIDER:$GITTEAMNAME/$PROJECT.git $NOW"
-
 git clone $GITUSER@$GITPROVIDER:$GITTEAMNAME/$PROJECT.git $NOW
 
-#Preparing directories
-mkdir -p $NOW/app/etc $NOW/media $NOW/var
-echo $RELEASE > $NOW/release
-
-#get to folder and deploy
 cd $ProjectDir/$NOW
-git fetch --all
-git reset --hard HEAD
-git checkout $RELEASE
-git pull
 
-# upgrade code
-#curl -sS https://getcomposer.org/installer | php
-cp ../composer.phar ./
-php composer.phar clear-cache
-php composer.phar install
+export COMPOSER_PROCESS_TIMEOUT=3000
 
-cd $ProjectDir/.deploy/dirs
-for i in * ; do
-  if [ -d "$i" ]; then
-	echo -e "Ln dir: $i"
-	rm -rf $ProjectDir/$NOW/$i ; ln -s ./../$i $ProjectDir/$NOW/$i
-  fi
-done
+curl -sS https://getcomposer.org/installer | php
+composer config -g github-oauth.github.com a77c3307be54e496d22e72896570626e7a4cd9d8
+composer config -g secure-http false
+composer run-script pre-install-cmd
+composer install -vvv
 
-#rm -rf ./var ; ln -s ./../var var
-#rm -rf ./media ; ln -s ./../media media
 
-cd $ProjectDir
-
-if [ -d "./current/" ]
-then
-    touch current/maintenance.flag
-fi
-
-cp -R $ProjectDir/.deploy/etc/root/* $ProjectDir/$NOW/
-
-#update database
 echo -e "Dump DB to $DBNAME.$NOW.gz"
 mysqldump -u$DBUSER -p$DBPWD -h$DBHOST $DBNAME | gzip -c > $ProjectDir/.deploy/sql/dumps/$DBNAME.$NOW.gz
 
-if [ $DROPDB -eq "1"  ]; then
-    echo -e "\n*******************************************\n"
-    echo -e "WILL DROP DB NOW. SHUTDOWN THE SCRIPT IF YOU DON'T WANT IT. PAUSED FOR 10 SEC"
-    echo -e "\n*******************************************\n"
-    sleep 10
-    echo -e "$NOW -> DROPping DATABASE" >> ./deploy.log
-    mysql -u$DBUSER -p$DBPWD -h$DBHOST -e"DROP DATABASE IF EXISTS $DBNAME;"
-    mysql -u$DBUSER -p$DBPWD -h$DBHOST -e"CREATE DATABASE $DBNAME CHARACTER SET utf8 COLLATE utf8_general_ci;"
-    pv $ProjectDir/.deploy/sql/$DBSQLFILE | gunzip | mysql -u$DBUSER -p$DBPWD -h$DBHOST $DBNAME
-fi
+echo "Applying ownership & proper permissions..."
+find . -type d -exec chmod 770 {} \; && find . -type f -exec chmod 660 {} \; && chmod u+x bin/magento
+# echo "Start install magento process..."
+# php -d xdebug.max_nesting_level=500 -f bin/magento setup:install --base-url="$BASEURL" --backend-frontname=admin --db-host="$DBHOST" --db-name="$DBNAME" --db-user="$DBUSER" --db-password="$DBPWD" --admin-firstname=Local --admin-lastname=Admin --admin-email=admin@example.com --admin-user="admin" --admin-password="123q123q" --language=en_US --currency=USD --timezone=America/Chicago
+#./bin/magento indexer:reindex
 
-if [ `ls -1 $ProjectDir/.deploy/sql/insert/*.tar.gz 2>/dev/null | wc -l ` -gt 0 ]; then
-    echo "DUMP DB: $DBNAME"
-    mysqldump -u$DBUSER -p$DBPWD -h$DBHOST $DBNAME | gzip -c > $CUR_dir/.deploy/sql/dumps/$DBNAME.$NOW.gz
-    echo "DROP & CREATE DB: $DBNAME"
-    mysql -u$DBUSER -p$DBPWD -h$DBHOST -e"DROP DATABASE IF EXISTS $DBNAME;"
-    mysql -u$DBUSER -p$DBPWD -h$DBHOST -e"CREATE DATABASE $DBNAME CHARACTER SET utf8 COLLATE utf8_general_ci;"
-    for tarfile in $ProjectDir/.deploy/sql/insert/*.tar.gz; do 
-        mkdir $ProjectDir/.deploy/sql/insert/tmp
-        tar -xvzf $tarfile -C $ProjectDir/.deploy/sql/insert/tmp
-        find $ProjectDir/.deploy/sql/insert/tmp -name '*.sql' | awk '{ print "source",$0 }' | mysql --batch -u$DBUSER -p$DBPWD -h$DBHOST $DBNAME
-        rm -rf $ProjectDir/.deploy/sql/insert/tmp
-        mv $tarfile $ProjectDir/.deploy/sql/done/
-    done
-fi
+ln -s ../../../env.php ./app/etc/
+ln -s ../../../config.php ./app/etc/
+
+composer run-script post-install-cmd
+
+echo "Symlink to media..."
+rm -fr $ProjectDir/$NOW/pub/media
+ln -s $ProjectDir/media/ $ProjectDir/$NOW/pub/media
 
 
-cd $ProjectDir/$NOW/
-rm -rf var/cache/*
-#n98-magerun.phar cache:clean
-php ./index.php
-cd ../
-chown -R $WWWUSER:$WWWGROUP $NOW
+echo "Clean cache..."
+rm -rf var/cache/* var/page_cache/* var/generation/*
 
-#switch
-ln -sfn ./$NOW/ ./current
+echo "Setup upgrade and dicompile..."
+./bin/magento setup:upgrade
+./bin/magento setup:di:compile
+
+
+echo "Set magento2 deploy mode to $DEPLOYMODE"
+./bin/magento deploy:mode:set $DEPLOYMODE --skip-compilation
+
+#if [ "$DEPLOYMODE" == "production" ]; then
+echo "Deploying static view files..."
+# For example $LOCALES value: en_US ru_RU
+./bin/magento setup:static-content:deploy en_US ru_RU
+#fi
+
+
+echo "Applying ownership & proper permissions..."
+chown -R $WWWUSER:$WWWGROUP $ProjectDir/
+chmod -R 777 $ProjectDir/$NOW/var/
+chmod -R 777 $ProjectDir/$NOW/pub/
+
+
+echo "Switch to current"
+ln -sfn ./$NOW/ $ProjectDir/current
+
 
 echo -e "KEEP=$KEEP , start checks"
 
 test $KEEP -gt 0 && NEEDREMOVE=1
-
+cd $ProjectDir
 if [ $NEEDREMOVE ]; then
     echo -e "REMOVING OLD RELEASES, KEEP=[$KEEP]"
     #clean old releases
@@ -132,14 +114,5 @@ fi
 
 echo -e `pwd`
 
-
-if [ -f $ProjectDir/.deploy/sql/init.sql ]; then
-    pv $ProjectDir/.deploy/sql/init.sql | mysql -u$DBUSER -p$DBPWD -h$DBHOST $DBNAME
-fi
-
-
-if [ -f $ProjectDir/.deploy/etc/post-deploy.sh ]; then
-    source $ProjectDir/.deploy/etc/post-deploy.sh
-fi
 
 exit 0
