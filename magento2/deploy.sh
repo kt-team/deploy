@@ -77,7 +77,10 @@ echo "Set magento2 deploy mode to $DEPLOYMODE"
 #if [ "$DEPLOYMODE" == "production" ]; then
 echo "Deploying static view files..."
 # For example $LOCALES value: en_US ru_RU
-./bin/magento setup:static-content:deploy en_US ru_RU
+if [ -z "$LOCALES" ]; then
+    LOCALES="en_US ru_RU"
+fi
+./bin/magento setup:static-content:deploy $LOCALES
 #fi
 
 
