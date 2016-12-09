@@ -115,8 +115,10 @@ n98-magerun.phar cache:clean
 php ./index.php
 cd ../
 chown -R $WWWUSER:$WWWGROUP $NOW
-
+if [ -f "$ProjectDir/.deploy/etc/main.wsdl" ]
+then
 cp -R $ProjectDir/.deploy/etc/main.wsdl $ProjectDir/$NOW/var/cache/main.wsdl
+fi
 #switch
 ln -sfn ./$NOW/ ./current
 
