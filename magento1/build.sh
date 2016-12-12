@@ -14,7 +14,8 @@ fi
 #LOADING VARS FROM FILE"
 source $ProjectDir/.deploy/etc/.config
 
-#CHECKING DISK SPACE
+# #CHECKING DISK SPACE
+if [ $CHKDSK -eq "1"  ]; then
 CurrDirAllSize=`du -Lc $ProjectDir/current | tail -n-1 | awk '{print $1}'`
 CurrDirMediaSize=`du -Lc $ProjectDir/media | tail -n-1 | awk '{print $1}'`
 CurrDirVarSize=`du -Lc $ProjectDir/var | tail -n-1 | awk '{print $1}'`
@@ -26,7 +27,7 @@ if [ $SpaceAvailable -lt $SpaceNeeded ]; then
     echo -e "NO DISK SPACE AVAILABLE! ABORTING TO PREVENTING ERRORS. Take a look on DISKSPACEBUFFER var in config"
     exit 1
 fi
-
+fi
 echo "GIT: git clone $GITUSER@$GITPROVIDER:$GITTEAMNAME/$PROJECT.git $NOW"
 
 git clone $GITUSER@$GITPROVIDER:$GITTEAMNAME/$PROJECT.git $NOW
@@ -78,7 +79,9 @@ cp -R $ProjectDir/.deploy/etc/root/* $ProjectDir/$NOW/
 
 #update database
 echo -e "Dump DB to $DBNAME.$NOW.gz"
-mysqldump -u$DBUSER -p$DBPWD -h$DBHOST $DBNAME | gzip -c > $ProjectDir/.deploy/sql/dumps/$DBNAME.$NOW.gz
+if [ $DUMPDB -eq "1"  ]; then
+    mysqldump -u$DBUSER -p$DBPWD -h$DBHOST $DBNAME | gzip -c > $ProjectDir/.deploy/sql/dumps/$DBNAME.$NOW.gz
+fi
 
 if [ $DROPDB -eq "1"  ]; then
     echo -e "\n*******************************************\n"
