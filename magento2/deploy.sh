@@ -34,6 +34,10 @@ fi
 git clone $GITUSER@$GITPROVIDER:$GITTEAMNAME/$PROJECT.git $NOW
 
 cd $ProjectDir/$NOW
+git fetch --all
+git reset --hard HEAD
+git checkout $RELEASE
+git pull
 
 export COMPOSER_PROCESS_TIMEOUT=3000
 
