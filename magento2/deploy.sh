@@ -87,8 +87,9 @@ fi
 
 if [ -z "$THEME" ]; then
     THEME=""
+else
+    THEME="-t Magento/backend $THEME"
 fi
-
 ./bin/magento setup:static-content:deploy $THEME $LOCALES
 #fi
 
