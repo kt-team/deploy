@@ -89,7 +89,7 @@ fi
 if [ -z "$THEME" ]; then
     PARAMS="$LOCALES"
 else
-    PARAMS="-t Magento/backend -t $THEME -l $LOCALES"
+    PARAMS="-t Magento/backend -t $THEME $LOCALES"
 fi
 ./bin/magento setup:static-content:deploy $PARAMS
 #fi
