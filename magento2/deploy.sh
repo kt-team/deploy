@@ -84,7 +84,13 @@ echo "Deploying static view files..."
 if [ -z "$LOCALES" ]; then
     LOCALES="en_US ru_RU"
 fi
-./bin/magento setup:static-content:deploy $LOCALES
+
+if [ -z "$THEME" ]; then
+    THEME=""
+else
+    THEME="-t Magento/backend $THEME"
+fi
+./bin/magento setup:static-content:deploy $THEME $LOCALES
 #fi
 
 
