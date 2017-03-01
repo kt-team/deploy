@@ -1,33 +1,52 @@
 BASE_PATH=/var/www/magento
 source $BASE_PATH/.deploy/etc/.config
+
+cd $BASE_PATH
+rm -rf $BASE_PATH/current
+
+echo "Downloading the Magento CE metapackage..."
+composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition current
+
 cd $BASE_PATH/current
-rm -rf $BASE_PATH/current/.*
-rm -rf $BASE_PATH/current/*
-git clone https://github.com/magento/magento2.git ./
-git checkout $MAGENTO_VERSION
-git reset --hard HEAD
+ln -s /root/.composer ./var/composer_home
+chmod +x ./bin/magento
+
+echo "Drop and create database $DBNAME..."
+mysql -u$DBUSER -p$DBPWD -h$DBHOST -e "DROP DATABASE $DBNAME; CREATE DATABASE $DBNAME CHARACTER SET utf8 COLLATE utf8_general_ci;"
+
+echo "Running Magento 2 setup script..."
+php ./bin/magento setup:install \
+--backend-frontname=admin \
+  --db-host=$DBHOST \
+  --db-name=$DBNAME \
+  --db-user=$DBUSER \
+  --db-password=$DBPWD \
+  --base-url=$BASEURL \
+  --admin-firstname=Admin \
+  --admin-lastname=User \
+  --admin-email=admin@kt-team.de \
+  --admin-user=magento2 \
+  --admin-password=magento2
+
+
+echo "Set permissions for shared hosting..."
 find . -type d -exec chmod 770 {} \; && find . -type f -exec chmod 660 {} \; && chmod u+x bin/magento
+
+echo "Add satis to composer repositories..."
 composer config secure-http false
 composer config repositories.satis composer http://satis.kt-team.de
-composer install
-mysql -uroot -ptmp -hmysql -e "DROP DATABASE $DBNAME; CREATE DATABASE $DBNAME;";
-php -d xdebug.max_nesting_level=500 -f bin/magento setup:install --base-url="$BASEURL" --backend-frontname=admin --db-host=$DBHOST --db-name=$DBNAME --db-user=$DBUSER --db-password="$DBPWD" --admin-firstname=Local --admin-lastname=Admin --admin-email=admin@example.com --admin-user="$ADMINUSER" --admin-password="$ADMINPASSWORD" --language=en_US --currency=USD --timezone=America/Chicago
-rm -rf var/generation/* var/cache/*
-rm -rf $BASE_PATH/sample-data
-git clone https://github.com/magento/magento2-sample-data.git $BASE_PATH/sample-data
-cd $BASE_PATH/sample-data
-git checkout $MAGENTO_VERSION
-git reset --hard HEAD
-cd $BASE_PATH/sample-data/dev/tools
-chmod 777 -R $BASE_PATH/sample-data
-php build-sample-data.php --ce-source="$BASE_PATH/current"
-cd $BASE_PATH/current
-rm -rf var/generation/* var/cache/*
-php -d xdebug.max_nesting_level=500 bin/magento setup:upgrade
-git clone $GITUSER@$GITPROVIDER:$GITTEAMNAME/$PROJECT.git tmp-magento
-cp tmp-magento/setup.sql $BASE_PATH/current/setup.sql
-rm -rf tmp-magento
-mysql -uroot -ptmp -h mysql $DBNAME < $BASE_PATH/current/setup.sql
-bin/magento setup:di:compile
-bin/magento deploy:mode:set production
+
+echo "Clean cache and generation..."
+rm -rf var/generation/* var/cache/* var/page_cache/*
+
+echo "Set deploy mode to $DEPLOYMODE..."
+bin/magento deploy:mode:set $DEPLOYMODE
+
+echo "Running install sample data..."
+php ./bin/magento sampledata:deploy
+php ./bin/magento module:enable --all
+php ./bin/magento setup:upgrade
+
+echo "Set owner www-data..."
 chown -R www-data:www-data ./*
+echo "The setup script has completed execution."
