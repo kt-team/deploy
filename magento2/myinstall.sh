@@ -12,7 +12,8 @@ ln -s /root/.composer ./var/composer_home
 chmod +x ./bin/magento
 
 echo "Drop and create database $DBNAME..."
-mysql -u$DBUSER -p$DBPWD -h$DBHOST -e "DROP DATABASE $DBNAME; CREATE DATABASE $DBNAME CHARACTER SET utf8 COLLATE utf8_general_ci;"
+mysql -u$DBUSER -p$DBPWD -h$DBHOST -e "DROP DATABASE $DBNAME;" 
+mysql -u$DBUSER -p$DBPWD -h$DBHOST -e "CREATE DATABASE $DBNAME CHARACTER SET utf8 COLLATE utf8_general_ci;"
 
 echo "Running Magento 2 setup script..."
 php ./bin/magento setup:install \
