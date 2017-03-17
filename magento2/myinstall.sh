@@ -54,8 +54,10 @@ php ./bin/magento sampledata:deploy
 php ./bin/magento module:enable --all
 php ./bin/magento setup:upgrade
 
-echo "Set owner www-data..."
-chown -R www-data:www-data ./*
+echo "Applying ownership & proper permissions..."
+chown -R $WWWUSER:$WWWGROUP $ProjectDir/
+chmod -R 777 $ProjectDir/$NOW/var/
+chmod -R 777 $ProjectDir/$NOW/pub/
 
 echo "Switch to current"
 ln -sfn ./$NOW/ $ProjectDir/current
