@@ -83,7 +83,7 @@ echo "Deploying static view files..."
 # For example $LOCALES value: en_US ru_RU
 if [ -z "$LOCALES" ]; then
     LOCALES="en_US ru_RU"
-else 
+else
     PARAMS="$LOCALES"
 fi
 if [ -z "$THEME" ]; then
@@ -96,14 +96,14 @@ fi
 
 
 echo "Applying ownership & proper permissions..."
-chown -R $WWWUSER:$WWWGROUP $ProjectDir/
+chown -R $WWWUSER:$WWWGROUP $ProjectDir/$NOW
 chmod -R 777 $ProjectDir/$NOW/var/
 chmod -R 777 $ProjectDir/$NOW/pub/
 
 
 echo "Switch to current"
 ln -sfn ./$NOW/ $ProjectDir/current
-
+chown -R $WWWUSER:$WWWGROUP $ProjectDir/current
 
 echo -e "KEEP=$KEEP , start checks"
 
