@@ -1,13 +1,19 @@
 BASE_PATH=/var/www/magento
 source $BASE_PATH/.deploy/etc/.config
 
-cd $BASE_PATH
-rm -rf $BASE_PATH/current
+set -e # EXIT on ANY error
+NOW=$(date +"%Y-%m-%d-%H-%M")
+ProjectDir=$BASE_PATH
+if [ ! -f $ProjectDir/.deploy/etc/.config ]; then
+    exit "NO VAR FILE FOUND"
+fi
+
+cd $ProjectDir
 
 echo "Downloading the Magento CE metapackage..."
-composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition current
+composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition $NOW
 
-cd $BASE_PATH/current
+cd $ProjectDir/$NOW
 ln -s /root/.composer ./var/composer_home
 chmod +x ./bin/magento
 
@@ -50,4 +56,8 @@ php ./bin/magento setup:upgrade
 
 echo "Set owner www-data..."
 chown -R www-data:www-data ./*
+
+echo "Switch to current"
+ln -sfn ./$NOW/ $ProjectDir/current
+
 echo "The setup script has completed execution."
