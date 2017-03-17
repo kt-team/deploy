@@ -55,11 +55,12 @@ php ./bin/magento module:enable --all
 php ./bin/magento setup:upgrade
 
 echo "Applying ownership & proper permissions..."
-chown -R $WWWUSER:$WWWGROUP $ProjectDir/
+chown -R $WWWUSER:$WWWGROUP $ProjectDir/$NOW
 chmod -R 777 $ProjectDir/$NOW/var/
 chmod -R 777 $ProjectDir/$NOW/pub/
 
 echo "Switch to current"
 ln -sfn ./$NOW/ $ProjectDir/current
+chown -R $WWWUSER:$WWWGROUP $ProjectDir/current
 
 echo "The setup script has completed execution."
