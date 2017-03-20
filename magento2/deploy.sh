@@ -3,9 +3,9 @@ set -e # EXIT on ANY error
 BASE_PATH=/var/www/magento
 cd $BASE_PATH
 
-rm -rf /etc/php5/cli/conf.d/20-xdebug.ini 
-rm -rf /etc/php/5.6/cli/conf.d/20-xdebug.ini 
-rm -rf /etc/php/7.0/cli/conf.d/20-xdebug.ini 
+rm -rf /etc/php5/cli/conf.d/20-xdebug.ini
+rm -rf /etc/php/5.6/cli/conf.d/20-xdebug.ini
+rm -rf /etc/php/7.0/cli/conf.d/20-xdebug.ini
 
 set -e # EXIT on ANY error
 NOW=$(date +"%Y-%m-%d-%H-%M")
@@ -53,13 +53,13 @@ mysqldump -u$DBUSER -p$DBPWD -h$DBHOST $DBNAME | gzip -c > $ProjectDir/.deploy/s
 
 echo "Applying ownership & proper permissions..."
 find . -type d -exec chmod 770 {} \; && find . -type f -exec chmod 660 {} \; && chmod u+x bin/magento
-# echo "Start install magento process..."
-# php -d xdebug.max_nesting_level=500 -f bin/magento setup:install --base-url="$BASEURL" --backend-frontname=admin --db-host="$DBHOST" --db-name="$DBNAME" --db-user="$DBUSER" --db-password="$DBPWD" --admin-firstname=Local --admin-lastname=Admin --admin-email=admin@example.com --admin-user="admin" --admin-password="123q123q" --language=en_US --currency=USD --timezone=America/Chicago
-#./bin/magento indexer:reindex
 
 ln -s ../../../env.php ./app/etc/
-ln -s ../../../config.php ./app/etc/
 
+echo "Generate modules in config.php..."
+bin/magento module:enable --all
+
+echo "Run post install cmd..."
 composer run-script post-install-cmd
 
 echo "Symlink to media..."
@@ -91,8 +91,8 @@ if [ -z "$THEME" ]; then
 else
     PARAMS="-t Magento/backend -t $THEME $LOCALES"
 fi
+
 ./bin/magento setup:static-content:deploy $PARAMS
-#fi
 
 
 echo "Applying ownership & proper permissions..."
