@@ -18,7 +18,7 @@ ln -s /root/.composer ./var/composer_home
 chmod +x ./bin/magento
 
 echo "Drop and create database $DBNAME..."
-mysql -u$DBUSER -p$DBPWD -h$DBHOST -e "DROP DATABASE $DBNAME;" 
+mysql -u$DBUSER -p$DBPWD -h$DBHOST -e "DROP DATABASE $DBNAME;"
 mysql -u$DBUSER -p$DBPWD -h$DBHOST -e "CREATE DATABASE $DBNAME CHARACTER SET utf8 COLLATE utf8_general_ci;"
 
 echo "Running Magento 2 setup script..."
@@ -32,8 +32,8 @@ php ./bin/magento setup:install \
   --admin-firstname=Admin \
   --admin-lastname=User \
   --admin-email=admin@kt-team.de \
-  --admin-user=magento2 \
-  --admin-password=magento2
+  --admin-user=$ADMINUSER \
+  --admin-password=$ADMINPASSWORD
 
 
 echo "Set permissions for shared hosting..."
