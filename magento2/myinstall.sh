@@ -52,7 +52,7 @@ bin/magento deploy:mode:set $DEPLOYMODE
 echo "Running install sample data..."
 php ./bin/magento sampledata:deploy
 php ./bin/magento module:enable --all
-php ./bin/magento setup:upgrade
+php ./bin/magento setup:upgrade --keep-generated
 
 echo "Applying ownership & proper permissions..."
 chown -R $WWWUSER:$WWWGROUP $ProjectDir/$NOW
