@@ -42,7 +42,7 @@ git pull
 export COMPOSER_PROCESS_TIMEOUT=3000
 
 curl -sS https://getcomposer.org/installer | php
-composer config -g github-oauth.github.com a77c3307be54e496d22e72896570626e7a4cd9d8
+#composer config -g github-oauth.github.com genarated-github-token
 composer config -g secure-http false
 composer run-script pre-install-cmd
 composer install -vvv
