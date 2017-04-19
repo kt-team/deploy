@@ -102,9 +102,10 @@ ln -sfn ./$NOW/ $ProjectDir/current
 
 echo -e "KEEP=$KEEP , start checks"
 
-test $KEEP -gt 0 && NEEDREMOVE=1
+
 cd $ProjectDir
 if [ $NEEDREMOVE ]; then
+    test $KEEP -gt 0 && NEEDREMOVE=1
     echo -e "REMOVING OLD RELEASES, KEEP=[$KEEP]"
     #clean old releases
     YEAR=`date +"%Y"`
