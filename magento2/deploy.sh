@@ -28,8 +28,15 @@ echo "Checking disk space: needed=$SpaceNeeded, available=$SpaceAvailable"
 
 if [ $SpaceAvailable -lt $SpaceNeeded ]; then
     echo -e "NO DISK SPACE AVAILABLE! ABORTING TO PREVENTING ERRORS. Take a look on DISKSPACEBUFFER var in config"
-    exit 1
 fi
+chmod 777 ./
+
+echo "change user to $WWWUSER"
+cp -rf /root/.ssh /home/$WWWUSER/
+chown -R $WWWUSER:$WWWGROUP /home/$WWWUSER/.ssh
+id
+exec sudo -u $WWWUSER /bin/bash - << eof
+id
 
 git clone $GITUSER@$GITPROVIDER:$GITTEAMNAME/$PROJECT.git $NOW
 
@@ -45,8 +52,7 @@ curl -sS https://getcomposer.org/installer | php
 composer config -g github-oauth.github.com $GITHUBTOKEN
 composer config -g secure-http false
 composer run-script pre-install-cmd
-composer install $VERBOSE
-
+composer install
 
 echo -e "Dump DB to $DBNAME.$NOW.gz"
 mysqldump -u$DBUSER -p$DBPWD -h$DBHOST $DBNAME | gzip -c > $ProjectDir/.deploy/sql/dumps/$DBNAME.$NOW.gz
@@ -81,29 +87,18 @@ echo "Set magento2 deploy mode to $DEPLOYMODE"
 #if [ "$DEPLOYMODE" == "production" ]; then
 echo "Deploying static view files..."
 # For example $LOCALES value: en_US ru_RU
-if [ -z "$LOCALES" ]; then
-    LOCALES="en_US ru_RU"
-else
-    PARAMS="$LOCALES"
-fi
-if [ -z "$THEME" ]; then
-    PARAMS="$LOCALES"
-else
-    PARAMS="-t Magento/backend -t $THEME $LOCALES"
-fi
 
-./bin/magento setup:static-content:deploy $PARAMS
+./bin/magento setup:static-content:deploy en_US
+./bin/magento setup:static-content:deploy ru_RU
 
 
 echo "Applying ownership & proper permissions..."
-chown -R $WWWUSER:$WWWGROUP $ProjectDir/$NOW
 chmod -R 777 $ProjectDir/$NOW/var/
 chmod -R 777 $ProjectDir/$NOW/pub/
 
 
 echo "Switch to current"
 ln -sfn ./$NOW/ $ProjectDir/current
-chown -R $WWWUSER:$WWWGROUP $ProjectDir/current
 
 echo -e "KEEP=$KEEP , start checks"
 
