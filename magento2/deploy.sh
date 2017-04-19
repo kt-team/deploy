@@ -84,10 +84,7 @@ echo "Setup upgrade and dicompile..."
 echo "Set magento2 deploy mode to $DEPLOYMODE"
 ./bin/magento deploy:mode:set $DEPLOYMODE --skip-compilation
 
-#if [ "$DEPLOYMODE" == "production" ]; then
 echo "Deploying static view files..."
-# For example $LOCALES value: en_US ru_RU
-
 ./bin/magento setup:static-content:deploy en_US
 ./bin/magento setup:static-content:deploy ru_RU
 
