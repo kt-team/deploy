@@ -34,6 +34,9 @@ chown $WWWUSER:$WWWGROUP /var/www
 echo "change user to $WWWUSER"
 cp -rf /root/.ssh /home/$WWWUSER/
 chown -R $WWWUSER:$WWWGROUP /home/$WWWUSER/.ssh
+chmod 700 /home/$WWWUSER/.ssh
+chown -R $WWWUSER:$WWWGROUP /home/$WWWUSER/.composer
+chmod 700 /home/www-data/.composer/
 id
 exec sudo -u $WWWUSER /bin/bash - << eof
 id
