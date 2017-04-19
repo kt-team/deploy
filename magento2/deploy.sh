@@ -100,7 +100,7 @@ chmod -R 777 $ProjectDir/$NOW/pub/
 echo "Switch to current"
 ln -sfn ./$NOW/ $ProjectDir/current
 
-$ProjectDir/deploy/magento2/deploy_clean.sh
+bash $ProjectDir/deploy/magento2/deploy_clean.sh
 
 exit 0
 eof
