@@ -30,7 +30,7 @@ if [ $SpaceAvailable -lt $SpaceNeeded ]; then
     echo -e "NO DISK SPACE AVAILABLE! ABORTING TO PREVENTING ERRORS. Take a look on DISKSPACEBUFFER var in config"
 fi
 chmod 777 ./
-
+chown $WWWUSER:$WWWGROUP /var/www
 echo "change user to $WWWUSER"
 cp -rf /root/.ssh /home/$WWWUSER/
 chown -R $WWWUSER:$WWWGROUP /home/$WWWUSER/.ssh
