@@ -84,7 +84,10 @@ echo "Setup upgrade and dicompile..."
 echo "Set magento2 deploy mode to $DEPLOYMODE"
 ./bin/magento deploy:mode:set $DEPLOYMODE --skip-compilation
 
+#if [ "$DEPLOYMODE" == "production" ]; then
 echo "Deploying static view files..."
+# For example $LOCALES value: en_US ru_RU
+
 ./bin/magento setup:static-content:deploy en_US
 ./bin/magento setup:static-content:deploy ru_RU
 
@@ -97,30 +100,7 @@ chmod -R 777 $ProjectDir/$NOW/pub/
 echo "Switch to current"
 ln -sfn ./$NOW/ $ProjectDir/current
 
-echo -e "KEEP=$KEEP , start checks"
-
-
-cd $ProjectDir
-if [ $NEEDREMOVE ]; then
-    test $KEEP -gt 0 && NEEDREMOVE=1
-    echo -e "REMOVING OLD RELEASES, KEEP=[$KEEP]"
-    #clean old releases
-    YEAR=`date +"%Y"`
-    for i in `ls -d */ | sort -r |  grep "$YEAR-"| grep -v "$NOW" | tail -n+$KEEP`
-    do
-        rm -rf ./$i/
-    done
-    #REMOVING OLD MYSQL DUMPS
-    for i in `find $ProjectDir/.deploy/sql/dumps -maxdepth 1 -type f -name "$DBNAME.$YEAR*.gz" | sort -r |  grep -v "$DBNAME.$NOW.gz" | tail -n+$KEEP`
-    do
-        rm -f ./$i
-    done
-
-fi
-
-
-echo -e `pwd`
-
+$ProjectDir/deploy/magento2/deploy_clean.sh
 
 exit 0
 eof
