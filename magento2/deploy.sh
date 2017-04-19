@@ -45,7 +45,7 @@ curl -sS https://getcomposer.org/installer | php
 composer config -g github-oauth.github.com $GITHUBTOKEN
 composer config -g secure-http false
 composer run-script pre-install-cmd
-composer install -vvv
+composer install $VERBOSE
 
 
 echo -e "Dump DB to $DBNAME.$NOW.gz"
