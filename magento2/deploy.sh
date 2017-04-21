@@ -1,6 +1,6 @@
 #!/bin/bash
 MESSAGE_PATH="https://tcturf.kt-team.de/message_deploy.php?message=";
-curl "$MESSAGE_PATHstart deploy"
+
 set -e # EXIT on ANY error
 BASE_PATH=/var/www/magento
 cd $BASE_PATH
@@ -15,6 +15,7 @@ ProjectDir=$BASE_PATH
 if [ ! -f $ProjectDir/.deploy/etc/.config ]; then
     exit "NO VAR FILE FOUND"
 fi
+curl "$MESSAGE_PATH\"start deploy $PROJECT.git to $NOW\""
 #LOADING VARS FROM FILE"
 source $ProjectDir/.deploy/etc/.config
 
