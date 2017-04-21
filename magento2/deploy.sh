@@ -1,4 +1,6 @@
 #!/bin/bash
+MESSAGE_PATH="https://tcturf.kt-team.de/message_deploy.php?message=";
+curl "$MESSAGE_PATHstart deploy"
 set -e # EXIT on ANY error
 BASE_PATH=/var/www/magento
 cd $BASE_PATH
