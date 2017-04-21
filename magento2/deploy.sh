@@ -33,6 +33,7 @@ chmod 777 ./
 chown $WWWUSER:$WWWGROUP /var/www
 echo "change user to $WWWUSER"
 mkdir -p /home/$WWWUSER/
+mkdir -p /home/$WWWUSER/.composer
 cp -rf /root/.ssh /home/$WWWUSER/
 chown -R $WWWUSER:$WWWGROUP /home/$WWWUSER/.ssh
 chmod 700 /home/$WWWUSER/.ssh
