@@ -15,9 +15,10 @@ ProjectDir=$BASE_PATH
 if [ ! -f $ProjectDir/.deploy/etc/.config ]; then
     exit "NO VAR FILE FOUND"
 fi
-curl "$MESSAGE_PATH\"start deploy $PROJECT.git to $NOW\""
+
 #LOADING VARS FROM FILE"
 source $ProjectDir/.deploy/etc/.config
+curl "$MESSAGE_PATH\"start deploy $PROJECT.git to $NOW\""
 
 echo "DISKSPACEBUFFER: $DISKSPACEBUFFER";
 
