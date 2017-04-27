@@ -107,6 +107,6 @@ echo "Switch to current"
 ln -sfn ./$NOW/ $ProjectDir/current
 
 bash $ProjectDir/deploy/magento2/deploy_clean.sh
-
+curl "$MESSAGE_PATH\"Finish deploy $PROJECT.git to $NOW\""
 exit 0
 eof
