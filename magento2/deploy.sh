@@ -86,17 +86,13 @@ echo "Clean cache..."
 rm -rf var/cache/* var/page_cache/* var/generation/*
 
 echo "Setup upgrade and dicompile..."
-./bin/magento setup:upgrade
-./bin/magento setup:di:compile
-
-
+php -d memory_limit=1512M ./bin/magento setup:upgrade
+php -d memory_limit=1512M ./bin/magento setup:di:compile
 echo "Set magento2 deploy mode to $DEPLOYMODE"
-./bin/magento deploy:mode:set $DEPLOYMODE --skip-compilation
-
+php -d memory_limit=1512M ./bin/magento deploy:mode:set $DEPLOYMODE --skip-compilation
 echo "Deploying static view files..."
-./bin/magento setup:static-content:deploy en_US
-./bin/magento setup:static-content:deploy ru_RU
-
+php -d memory_limit=1512M ./bin/magento setup:static-content:deploy en_US
+php -d memory_limit=1512M ./bin/magento setup:static-content:deploy ru_RU
 
 echo "Applying ownership & proper permissions..."
 chmod -R 777 $ProjectDir/$NOW/var/
