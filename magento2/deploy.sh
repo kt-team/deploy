@@ -101,7 +101,8 @@ chmod -R 777 $ProjectDir/$NOW/pub/
 
 echo "Switch to current"
 ln -sfn ./$NOW/ $ProjectDir/current
-echo 'set $MAGE_ROOT /var/www/magento/$NOW;' > /var/www/magento/MAGE_ROOT
+STRING='set $MAGE_ROOT /var/www/magento/'$NOW;
+echo $STRING > /var/www/magento/MAGE_ROOT
 
 bash $ProjectDir/deploy/magento2/deploy_clean.sh
 curl "$MESSAGE_PATH\"Finish deploy $PROJECT.git to $NOW\""
