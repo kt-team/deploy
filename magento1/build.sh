@@ -14,20 +14,6 @@ fi
 #LOADING VARS FROM FILE"
 source $ProjectDir/.deploy/etc/.config
 
-# #CHECKING DISK SPACE
-if [ $CHKDSK -eq "1"  ]; then
-CurrDirAllSize=`du -Lc $ProjectDir/current | tail -n-1 | awk '{print $1}'`
-CurrDirMediaSize=`du -Lc $ProjectDir/media | tail -n-1 | awk '{print $1}'`
-CurrDirVarSize=`du -Lc $ProjectDir/var | tail -n-1 | awk '{print $1}'`
-SpaceAvailable=`df $PWD | awk '/[0-9]%/{print $(NF-2)}'`
-SpaceNeeded=`expr $CurrDirAllSize - $CurrDirMediaSize - $CurrDirVarSize + $DISKSPACEBUFFER`
-echo "Checking disk space: needed=$SpaceNeeded, available=$SpaceAvailable"
-
-if [ $SpaceAvailable -lt $SpaceNeeded ]; then
-    echo -e "NO DISK SPACE AVAILABLE! ABORTING TO PREVENTING ERRORS. Take a look on DISKSPACEBUFFER var in config"
-    exit 1
-fi
-fi
 echo "GIT: git clone $GITUSER@$GITPROVIDER:$GITTEAMNAME/$PROJECT.git $NOW"
 
 git clone $GITUSER@$GITPROVIDER:$GITTEAMNAME/$PROJECT.git $NOW
