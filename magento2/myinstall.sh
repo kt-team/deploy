@@ -53,7 +53,9 @@ echo "Running install sample data..."
 php ./bin/magento sampledata:deploy
 php ./bin/magento module:enable --all
 php ./bin/magento setup:upgrade --keep-generated
-
+echo "Deploying static view files..."
+php -d memory_limit=1512M ./bin/magento setup:static-content:deploy en_US
+php -d memory_limit=1512M ./bin/magento setup:static-content:deploy ru_RU
 echo "Applying ownership & proper permissions..."
 chown -R $WWWUSER:$WWWGROUP $ProjectDir/$NOW
 chmod -R 777 $ProjectDir/$NOW/var/
